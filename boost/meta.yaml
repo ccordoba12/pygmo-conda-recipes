@@ -7,12 +7,11 @@ source:
   url: http://downloads.sourceforge.net/project/boost/boost-binaries/1.57.0/boost_1_57_0-msvc-10.0-64.exe   [win64]
 
 build:
-  number: 1
+  number: 2
 
 requirements:
   run:
     - python       <3
-    - libpython            [win]
 
 about:
   home: http://www.boost.org/
