@@ -1,0 +1,33 @@
+package:
+  name: pygmo
+  version: 1.1.5
+
+source:
+  git_url: https://github.com/esa/pagmo.git
+  git_tag: 1.1.5
+  patches:
+    - pygmo.patch                               [win]
+    - vs2010.patch                              [win]
+    - dlls.patch                                [win]
+
+build:
+  number: 2                                     [win]
+  has_prefix_files:                             [win]
+    - Lib/site-packages/PyGMO/__init__.py       [win]
+
+requirements:
+  build:
+    - boost        1.57*
+    - cmake
+    - python
+  run:
+    - boost        1.57*
+    - python
+
+test:
+  imports:
+    - PyGMO
+
+about:
+  home: http://esa.github.io/pygmo/index.html
+  license: BSD

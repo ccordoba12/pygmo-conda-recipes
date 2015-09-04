@@ -1,0 +1,14 @@
+diff --git a/PyGMO/__init__.py b/PyGMO/__init__.py
+index a2bd099..0b7db4d 100644
+--- a/PyGMO/__init__.py
++++ b/PyGMO/__init__.py
+@@ -21,6 +21,9 @@
+ # Free Software Foundation, Inc.,
+ # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
++import os
++os.environ['PATH'] = r"/opt/anaconda1anaconda2anaconda3\Library\bin" + os.pathsep + os.environ['PATH']
++
+ from PyGMO import core, algorithm, migration, problem, topology, test, util
+ from PyGMO.util import hypervolume, hv_algorithm
+ 

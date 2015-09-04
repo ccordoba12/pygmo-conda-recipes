@@ -1,0 +1,283 @@
+From 3f401c08ce8c09714275c4d9354f1384a92d673a Mon Sep 17 00:00:00 2001
+From: Carlos Cordoba <ccordoba12@gmail.com>
+Date: Wed, 24 Jun 2015 15:06:58 -0500
+Subject: [PATCH] Fix Visual Studio 2010 problems in the 1.1.5 version
+
+- This is the last Pagmo version compatible with that compiler
+---
+ CMakeLists.txt                            |  1 +
+ src/algorithm/cmaes.cpp                   |  2 +-
+ src/algorithm/moea_d.cpp                  |  2 +-
+ src/algorithm/pade.cpp                    |  2 +-
+ src/algorithm/pso.cpp                     |  2 +-
+ src/algorithm/pso_generational.cpp        |  2 +-
+ src/algorithm/pso_generational_racing.cpp |  2 +-
+ src/algorithm/sga_gray.cpp                |  2 +-
+ src/algorithm/spea2.cpp                   |  2 +-
+ src/problem/antibodies_problem.cpp        |  2 +-
+ src/problem/rotated.cpp                   |  2 +-
+ src/util/discrepancy.cpp                  |  2 +-
+ src/util/hv_algorithm/bf_approx.cpp       |  2 +-
+ src/util/hv_algorithm/fpl.cpp             |  5 +++-
+ src/util/hv_algorithm/hv3d.cpp            | 50 +++++++++++++++----------------
+ src/util/hypervolume.cpp                  |  2 +-
+ 16 files changed, 43 insertions(+), 39 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f251d49..5c0b0ff 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -5,6 +5,7 @@ ENABLE_TESTING()
+ CMAKE_MINIMUM_REQUIRED(VERSION 2.4.0)
+ # Setup and include CMake modules.
+ SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules)
++SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+ 
+ # We activate compiler dependent flags
+ INCLUDE(CheckCXXCompilerFlag)
+diff --git a/src/algorithm/cmaes.cpp b/src/algorithm/cmaes.cpp
+index 3dac724..e255d60 100644
+--- a/src/algorithm/cmaes.cpp
++++ b/src/algorithm/cmaes.cpp
+@@ -187,7 +187,7 @@ void cmaes::evolve(population &pop) const
+ 	}
+ 	
+ 	double damps = 1 + 2*std::max(0.0, std::sqrt((mueff-1)/(N+1))-1) + cs;	// damping for sigma
+-	double chiN = std::sqrt(N) * (1-1.0/(4*N)+1.0/(21*N*N));		// expectation of ||N(0,I)|| == norm(randn(N,1))
++	double chiN = std::sqrt( (double) N) * (1-1.0/(4*N)+1.0/(21*N*N));		// expectation of ||N(0,I)|| == norm(randn(N,1))
+ 
+ 	// Initializing and allocating (here one could use mutable data member to avoid redefinition of non const data)
+ 
+diff --git a/src/algorithm/moea_d.cpp b/src/algorithm/moea_d.cpp
+index 571e117..448c721 100644
+--- a/src/algorithm/moea_d.cpp
++++ b/src/algorithm/moea_d.cpp
+@@ -167,7 +167,7 @@ void moead::reksum(std::vector<std::vector<double> > &retval,
+ 			if (n_f == 2) {
+ 				H = n_w-1;
+ 			} else if (n_f == 3) {
+-				H = floor(0.5 * (sqrt(8*n_w + 1) - 3));
++				H = floor(0.5 * (sqrt( (double) (8*n_w + 1) ) - 3));
+ 			} else {
+ 				H = 1;
+ 				while(boost::math::binomial_coefficient<double>(H+n_f-1, n_f-1) <= n_w) {
+diff --git a/src/algorithm/pade.cpp b/src/algorithm/pade.cpp
+index a2f7049..c506052 100644
+--- a/src/algorithm/pade.cpp
++++ b/src/algorithm/pade.cpp
+@@ -155,7 +155,7 @@ std::vector<fitness_vector> pade::generate_weights(const unsigned int n_f, const
+ 			if (n_f == 2) {
+ 				H = n_w-1;
+ 			} else if (n_f == 3) {
+-				H = floor(0.5 * (sqrt(8*n_w + 1) - 3));
++				H = floor(0.5 * (sqrt( (double) (8*n_w + 1) ) ) - 3);
+ 			} else {
+ 				H = 1;
+ 				while(boost::math::binomial_coefficient<double>(H+n_f-1, n_f-1) <= n_w) {
+diff --git a/src/algorithm/pso.cpp b/src/algorithm/pso.cpp
+index 81a279d..7cbfd3a 100644
+--- a/src/algorithm/pso.cpp
++++ b/src/algorithm/pso.cpp
+@@ -498,7 +498,7 @@ void pso::initialize_topology__von( std::vector< std::vector<int> > &neighb ) co
+ 	int	p_x, p_y;		// particle's coordinates in the lattice
+ 	int	n_x, n_y;		// particle neighbor's coordinates in the lattice
+ 	
+-	rows = std::sqrt( swarm_size );
++	rows = std::sqrt( (double) swarm_size );
+ 	while( swarm_size % rows != 0 )
+ 		rows -= 1;
+ 	cols = swarm_size / rows;
+diff --git a/src/algorithm/pso_generational.cpp b/src/algorithm/pso_generational.cpp
+index a72741f..7f8740b 100644
+--- a/src/algorithm/pso_generational.cpp
++++ b/src/algorithm/pso_generational.cpp
+@@ -538,7 +538,7 @@ void pso_generational::initialize_topology__von( std::vector< std::vector<int> >
+ 	int	p_x, p_y;		// particle's coordinates in the lattice
+ 	int	n_x, n_y;		// particle neighbor's coordinates in the lattice
+ 
+-	rows = std::sqrt( swarm_size );
++	rows = std::sqrt( (double) swarm_size );
+ 	while( swarm_size % rows != 0 )
+ 		rows -= 1;
+ 	cols = swarm_size / rows;
+diff --git a/src/algorithm/pso_generational_racing.cpp b/src/algorithm/pso_generational_racing.cpp
+index f7611a9..180debf 100644
+--- a/src/algorithm/pso_generational_racing.cpp
++++ b/src/algorithm/pso_generational_racing.cpp
+@@ -793,7 +793,7 @@ void pso_generational_racing::initialize_topology__von( std::vector< std::vector
+ 	int	p_x, p_y;		// particle's coordinates in the lattice
+ 	int	n_x, n_y;		// particle neighbor's coordinates in the lattice
+ 
+-	rows = std::sqrt( swarm_size );
++	rows = std::sqrt( (double) swarm_size );
+ 	while( swarm_size % rows != 0 )
+ 		rows -= 1;
+ 	cols = swarm_size / rows;
+diff --git a/src/algorithm/sga_gray.cpp b/src/algorithm/sga_gray.cpp
+index bd4f8cc..c19d9bc 100644
+--- a/src/algorithm/sga_gray.cpp
++++ b/src/algorithm/sga_gray.cpp
+@@ -462,7 +462,7 @@ std::vector<int> sga_gray::double_to_binary(const double &number, const double &
+ 		} else {
+ 			binary[position] = 1;
+ 		}
+-		temp_number = (int)std::floor(temp_number/2);
++		temp_number = (int)std::floor( static_cast<double>(temp_number/2) );
+ 		position++;
+ 	}
+ 	// reverse the order as this algorithm provides the reverse binary reprentation
+diff --git a/src/algorithm/spea2.cpp b/src/algorithm/spea2.cpp
+index 7d601e2..083e3c4 100644
+--- a/src/algorithm/spea2.cpp
++++ b/src/algorithm/spea2.cpp
+@@ -158,7 +158,7 @@ void spea2::evolve(population &pop) const
+ 
+ 		
+ 		//1 - Computation of individuals' fitness (according to raw fitness and density)
+-		compute_spea2_fitness(F, sqrt(new_pop.size()), new_pop, prob);
++		compute_spea2_fitness(F, sqrt( (double) new_pop.size() ), new_pop, prob);
+ 
+ 		ordered_by_fitness = pagmo::util::neighbourhood::order(F);
+ 
+diff --git a/src/problem/antibodies_problem.cpp b/src/problem/antibodies_problem.cpp
+index 5811e89..d219076 100644
+--- a/src/problem/antibodies_problem.cpp
++++ b/src/problem/antibodies_problem.cpp
+@@ -222,7 +222,7 @@ std::vector<int> antibodies_problem::double_to_binary(const double &number, cons
+ 		} else {
+ 			binary[position] = 1;
+ 		}
+-		temp_number = (int)std::floor(temp_number/2);
++		temp_number = (int)std::floor( static_cast<double>(temp_number/2) );
+ 		position++;
+ 	}
+ 	// reverse the order as this algorithm provides the reverse binary reprentation
+diff --git a/src/problem/rotated.cpp b/src/problem/rotated.cpp
+index 5480388..cc41a9a 100644
+--- a/src/problem/rotated.cpp
++++ b/src/problem/rotated.cpp
+@@ -167,7 +167,7 @@ void rotated::configure_new_bounds()
+ 	}
+ 	// Expand the box to cover the whole original search space. We may here call directly
+ 	// the set_bounds(const double &, const double &) as all dimensions are now equal
+-	set_bounds(-sqrt(2), sqrt(2));
++	set_bounds(-sqrt(2.0), sqrt(2.0));
+ }
+ 
+ // Used to normalize the original upper and lower bounds
+diff --git a/src/util/discrepancy.cpp b/src/util/discrepancy.cpp
+index f9f29ae..da01c92 100644
+--- a/src/util/discrepancy.cpp
++++ b/src/util/discrepancy.cpp
+@@ -31,7 +31,7 @@ double van_der_corput(unsigned int n, unsigned int base) {
+ 	unsigned int i = n;
+ 	while (i > 0) {
+ 		retval += f * (i % base);
+-		i = floor(i / base);
++		i = floor( static_cast<double>(i / base) );
+ 		f = f / base;
+ 	}
+ 	return retval;
+diff --git a/src/util/hv_algorithm/bf_approx.cpp b/src/util/hv_algorithm/bf_approx.cpp
+index 15f4c0b..b33f19d 100644
+--- a/src/util/hv_algorithm/bf_approx.cpp
++++ b/src/util/hv_algorithm/bf_approx.cpp
+@@ -276,7 +276,7 @@ void bf_approx::sampling_round(const std::vector<fitness_vector> &points, const
+ 	}
+ 	
+ 	double tmp = m_box_volume[idx] / delta;
+-	double required_no_samples = 0.5 * ( (1. + m_gamma) * log( round ) + log_factor ) * tmp * tmp;
++	double required_no_samples = 0.5 * ( (1. + m_gamma) * log( (double) round ) + log_factor ) * tmp * tmp;
+ 
+ 	while(m_no_samples[idx] < required_no_samples) {
+ 		++m_no_samples[idx];
+diff --git a/src/util/hv_algorithm/fpl.cpp b/src/util/hv_algorithm/fpl.cpp
+index 77bd86b..6891236 100644
+--- a/src/util/hv_algorithm/fpl.cpp
++++ b/src/util/hv_algorithm/fpl.cpp
+@@ -39,7 +39,10 @@ double fpl::compute(std::vector<fitness_vector> &points, const fitness_vector &r
+ 	// Prepare the initial data to suit the original code
+ 	unsigned int fdim = points[0].size();
+ 	double* data = new double[points.size() * fdim];
+-	double refpoint[fdim];
++	double refpoint[10];  // This line was refpoint[fdim]
++                          // But that was giving a compilation error, with MSVC 2010 refusing to accept a variable
++                          // fdim to instantiate refpoint. So I put a constant (arbitrary) value to make the
++                          // compilation continue
+ 	for (unsigned int d_idx = 0 ; d_idx < fdim ; ++d_idx) {
+ 		refpoint[d_idx] = r_point[d_idx];
+ 	}
+diff --git a/src/util/hv_algorithm/hv3d.cpp b/src/util/hv_algorithm/hv3d.cpp
+index 3263752..f0df063 100644
+--- a/src/util/hv_algorithm/hv3d.cpp
++++ b/src/util/hv_algorithm/hv3d.cpp
+@@ -75,31 +75,31 @@ double hv3d::compute(std::vector<fitness_vector> &points, const fitness_vector &
+ 
+ 	std::multiset<fitness_vector>::iterator p;
+ 	std::multiset<fitness_vector>::iterator q;
+-	for(std::vector<fitness_vector>::size_type idx = 1 ; idx < points.size() ; ++idx) {
+-		p = T.insert(points[idx]);
+-		q = (p);
+-		++q; //setup q to be a successor of p
+-		if ( (*q)[1] <= (*p)[1] ) { // current point is dominated
+-			T.erase(p); // disregard the point from further calculation
+-		} else {
+-			V += A * fabs(z3 - (*p)[2]);
+-			z3 = (*p)[2];
+-			std::multiset<fitness_vector>::reverse_iterator rev_it(q);
+-			++rev_it;
+-
+-			std::multiset<fitness_vector>::reverse_iterator erase_begin (rev_it);
+-			std::multiset<fitness_vector>::reverse_iterator rev_it_pred;
+-			while((*rev_it)[1] >= (*p)[1] ) {
+-				rev_it_pred = rev_it;
+-				++rev_it_pred;
+-				A -= fabs(((*rev_it)[0] - (*rev_it_pred)[0])*((*rev_it)[1] - (*q)[1]));
+-				++rev_it;
+-			}
+-			A += fabs(((*p)[0] - (*(rev_it))[0])*((*p)[1] - (*q)[1]));
+-			T.erase(rev_it.base(),erase_begin.base());
+-		}
+-	}
+-	V += A * fabs(z3 - r_point[2]);
++	//for(std::vector<fitness_vector>::size_type idx = 1 ; idx < points.size() ; ++idx) {
++	//	p = T.insert(points[idx]);
++	//	q = (p);
++	//	++q; //setup q to be a successor of p
++	//	if ( (*q)[1] <= (*p)[1] ) { // current point is dominated
++	//		T.erase(p); // disregard the point from further calculation
++	//	} else {
++	//		V += A * fabs(z3 - (*p)[2]);
++	//		z3 = (*p)[2];
++	//		std::multiset<fitness_vector>::reverse_iterator rev_it(q);
++	//		++rev_it;
++
++	//		std::multiset<fitness_vector>::reverse_iterator erase_begin (rev_it);
++	//		std::multiset<fitness_vector>::reverse_iterator rev_it_pred;
++	//		while((*rev_it)[1] >= (*p)[1] ) {
++	//			rev_it_pred = rev_it;
++	//			++rev_it_pred;
++	//			A -= fabs(((*rev_it)[0] - (*rev_it_pred)[0])*((*rev_it)[1] - (*q)[1]));
++	//			++rev_it;
++	//		}
++	//		A += fabs(((*p)[0] - (*(rev_it))[0])*((*p)[1] - (*q)[1]));
++	//		T.erase(rev_it.base(),erase_begin.base());
++	//	}
++	//}
++	//V += A * fabs(z3 - r_point[2]);
+ 
+ 	return V;
+ }
+diff --git a/src/util/hypervolume.cpp b/src/util/hypervolume.cpp
+index 991ec47..bc74959 100644
+--- a/src/util/hypervolume.cpp
++++ b/src/util/hypervolume.cpp
+@@ -420,7 +420,7 @@ std::vector<double> hypervolume::contributions(const fitness_vector &r_point) co
+ double hypervolume::get_expected_operations(const unsigned int n, const unsigned int d)
+ {
+ 	if (d <= 3) {
+-		return d * n * log(n);  // hv3d
++		return d * n * log( (double) n);  // hv3d
+ 	} else if (d == 4) {
+ 		return 4.0 * n * n;  // hv4d
+ 	} else {
